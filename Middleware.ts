@@ -33,7 +33,7 @@ export class Middleware<Callback extends CallbackBase> implements MiddlewareMana
 	 */
 	public use(...args: MiddlewareCallback<Callback>[]): this {
 		for (const arg of args)
-			if (Middlewares.isMiddleware(arg))
+			if (Middleware.isMiddleware(arg))
 				this.#middlewares.add(arg);
 		return this;
 	}
