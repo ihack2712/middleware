@@ -1,4 +1,4 @@
 // Exports
 export * from "./types.ts";
-export * from "./Middlewares.ts";
-export { Middlewares as default } from "./Middlewares.ts";
+export * from "./Middleware.ts";
+export { Middleware as default } from "./Middleware.ts";
