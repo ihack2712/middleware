@@ -1,7 +1,7 @@
 export type NextFn = ((discontinue?: boolean) => Promise<void>) & { called?: true };
 export type CallbackBase = (...args: any[]) => any;
 export interface CallbackObject<Callback extends CallbackBase> {
-	run(...args: Parameters<Callback>): Promise<Diagnostics<Callback>>;
+	run(...args: Parameters<Callback>): Promise<Diagnostics<Callback>> | any;
 }
 export type MiddlewareCallback<Callback extends CallbackBase> =
 	((next: NextFn, ...args: Parameters<Callback>) =>
