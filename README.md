@@ -3,7 +3,7 @@
 If you're gonna implement middlewares, you should do it right! ;)
 
 ```ts
-import Middleware from "https://deno.land/x/middleware";
+import Middleware from "https://deno.land/x/middleware/mod.ts";
 
 class Greeter extends Middleware<(person: string) => any> {
 	public async greet (name: string) {
