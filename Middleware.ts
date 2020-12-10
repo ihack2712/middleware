@@ -61,7 +61,8 @@ export class Middleware<Callback extends CallbackBase> implements MiddlewareMana
 			total: middleware.length,
 			totalRan: 0,
 			discontinued: false,
-			reachedLast: false
+			reachedLast: false,
+			lastNextCalled: false
 		};
 		if (middleware.length < 1) {
 			diagnostics.reachedLast = true;
@@ -74,6 +75,7 @@ export class Middleware<Callback extends CallbackBase> implements MiddlewareMana
 			const mw = middleware[position];
 			position++;
 			const deadFn: NextFn = async d => {
+				diagnostics.lastNextCalled = true;
 				if (d !== true)
 					deadFn.called = true
 			};
@@ -85,13 +87,15 @@ export class Middleware<Callback extends CallbackBase> implements MiddlewareMana
 				return deadFn;
 			if (typeof mw === "object" && mw !== null && typeof mw === "object") {
 				const me: NextFn = async discontinue => {
+					if (me.called) return;
 					if (discontinue === true) {
 						diagnostics.discontinued = true;
 						return;
 					}
 					me.called = true;
 					try {
-						const d = await mw.run(...args);
+						const next = createNextFunction();
+						const d = await mw.run(...args, next);
 						if (
 							typeof d === "object" && d !== null
 							&& typeof d.success === "boolean"
@@ -101,6 +105,7 @@ export class Middleware<Callback extends CallbackBase> implements MiddlewareMana
 							&& typeof d.totalRan === "number"
 							&& typeof d.discontinued === "boolean"
 							&& typeof d.reachedLast === "boolean"
+							&& typeof d.lastNextCalled === "boolean"
 						) {
 							diagnostics.proxies++;
 							diagnostics.total += d.total - 1;
@@ -116,6 +121,8 @@ export class Middleware<Callback extends CallbackBase> implements MiddlewareMana
 								d1.middleware = d2.middleware;
 								d1.proxy = d2.proxy || mw;
 							}
+							if (!diagnostics.discontinued && diagnostics.success)
+								await next();
 						} else {
 							diagnostics.ran++;
 						}
@@ -127,17 +134,12 @@ export class Middleware<Callback extends CallbackBase> implements MiddlewareMana
 						d.middleware = mw;
 						throw error;
 					}
-					if (!diagnostics.discontinued && diagnostics.success) {
-						try {
-							const next = createNextFunction();
-							await next();
-						} catch (error) { }
-					}
 				};
 				return me;
 			}
 			if (typeof mw === "function") {
 				const me: NextFn = async discontinue => {
+					if (me.called) return;
 					if (discontinue === true) {
 						diagnostics.discontinued = true;
 						return;
@@ -146,7 +148,7 @@ export class Middleware<Callback extends CallbackBase> implements MiddlewareMana
 					try {
 						diagnostics.ran++;
 						diagnostics.totalRan++;
-						await mw(createNextFunction(), ...args);
+						await mw(...args, createNextFunction());
 					} catch (error) {
 						const d = (diagnostics as Diagnostics<Callback> & { success: false });
 						d.success = false;

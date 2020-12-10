@@ -14,12 +14,12 @@ class Greeter extends Middleware<(person: string) => any> {
 const myGreeter = new Greeter();
 
 myGreeter.use(
-	async (next, person) => {
+	async (person, next) => {
 		console.log("Hello", person);
 		await next();
 		console.log("Bye", person);
 	},
-	async (next, person) => {
+	async person => {
 		console.log(person, "walked into the room!");
 	}
 );
@@ -34,7 +34,7 @@ You can also use an object that has a run function.
 
 ```ts
 myGreeter.use({
-	run: async (next, person) =>
+	run: async person =>
 		console.log("Hóla", person);
 });
 ```
@@ -42,7 +42,7 @@ myGreeter.use({
 You can even unuse any middleware at any time!
 
 ```ts
-const myMiddleware = async (next: NextFn, person: string) =>
+const myMiddleware = async (person: string) =>
 	console.log("Hóla", person);
 
 myGreeter.use(myMiddleware);
