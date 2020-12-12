@@ -52,7 +52,7 @@ export class Middleware<Callback extends CallbackBase> implements MiddlewareMana
 	 * Run the middlewares stored on this object.
 	 * @param args The arguments to pass to each middleware.
 	 */
-	public async run(...args: Parameters<Callback>): Promise<Diagnostics<Callback>> {
+	public async run(...args: Parameters<Callback>): Promise<void | Diagnostics<Callback>> {
 		const middleware = [...this.#middlewares];
 		const diagnostics: Diagnostics<Callback> = {
 			success: true,
