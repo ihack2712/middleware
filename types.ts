@@ -42,5 +42,5 @@ export interface MiddlewareManager<Callback extends CallbackBase> {
 	/** Remove callback from the manager. */
 	unuse(...args: MiddlewareCallback<Callback>[]): unknown;
 	/** Run the middlewares on this manager. */
-	run(...args: Parameters<Callback>): Promise<void | Diagnostics<Callback>>;
+	run(...args: [...Parameters<Callback>, NextFn | undefined | void]): Promise<void | Diagnostics<Callback>>;
 }

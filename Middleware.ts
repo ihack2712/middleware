@@ -52,7 +52,7 @@ export class Middleware<Callback extends CallbackBase> implements MiddlewareMana
 	 * Run the middlewares stored on this object.
 	 * @param args The arguments to pass to each middleware.
 	 */
-	public async run(...args: Parameters<Callback>): Promise<void | Diagnostics<Callback>> {
+	public async run(...args: [...Parameters<Callback>, NextFn | undefined | void]): Promise<void | Diagnostics<Callback>> {
 		const middleware = [...this.#middlewares];
 		const diagnostics: Diagnostics<Callback> = {
 			success: true,
@@ -95,7 +95,7 @@ export class Middleware<Callback extends CallbackBase> implements MiddlewareMana
 					me.called = true;
 					try {
 						const next = createNextFunction();
-						const d = await mw.run(...args, next);
+						const d = await (mw as any).run(...args, next);
 						if (
 							typeof d === "object" && d !== null
 							&& typeof d.success === "boolean"
@@ -148,7 +148,7 @@ export class Middleware<Callback extends CallbackBase> implements MiddlewareMana
 					try {
 						diagnostics.ran++;
 						diagnostics.totalRan++;
-						await mw(...args, createNextFunction());
+						await (mw as any)(...args, createNextFunction());
 					} catch (error) {
 						const d = (diagnostics as Diagnostics<Callback> & { success: false });
 						d.success = false;
